@@ -141,7 +141,7 @@ def check_loadbalancer_services(snapshot: ClusterSnapshot) -> list[Finding]:
                     category="networking",
                     resource_ref=f"Service/{svc.name}",
                     namespace=svc.namespace,
-                    evidence=f"type=LoadBalancer",
+                    evidence="type=LoadBalancer",
                     recommendation="Verify this service should be publicly exposed. Consider using an Ingress.",
                 )
             )

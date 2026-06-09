@@ -1,0 +1,90 @@
+# BB-8 Kubernetes Sidekick — Least-privilege read-only RBAC
+# Apply with: kubectl apply -f deploy/k8s/readonly-rbac.yaml
+#
+# This grants read-only access to safe, non-secret cluster resources.
+# Secrets are explicitly excluded.
+# No write, exec, attach, port-forward, proxy, escalate, or impersonation verbs.
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: bb8-readonly
+  namespace: default
+  labels:
+    app.kubernetes.io/name: bb8
+    app.kubernetes.io/component: agent
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: bb8-readonly
+  labels:
+    app.kubernetes.io/name: bb8
+    app.kubernetes.io/component: agent
+rules:
+  - apiGroups: [""]
+    resources:
+      - namespaces
+      - nodes
+      - pods
+      - services
+      - endpoints
+      - events
+      - serviceaccounts
+      - resourcequotas
+      - limitranges
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["apps"]
+    resources:
+      - deployments
+      - replicasets
+      - daemonsets
+      - statefulsets
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["batch"]
+    resources:
+      - jobs
+      - cronjobs
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["networking.k8s.io"]
+    resources:
+      - ingresses
+      - networkpolicies
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["rbac.authorization.k8s.io"]
+    resources:
+      - roles
+      - rolebindings
+      - clusterroles
+      - clusterrolebindings
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["policy"]
+    resources:
+      - poddisruptionbudgets
+    verbs: ["get", "list", "watch"]
+  # Explicitly excluded (do not add these):
+  # - secrets
+  # - pods/exec
+  # - pods/attach
+  # - pods/portforward
+  # - services/proxy
+  # - nodes/proxy
+  # - serviceaccounts/token
+  # - tokenreviews
+  # - subjectaccessreviews
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: bb8-readonly
+  labels:
+    app.kubernetes.io/name: bb8
+    app.kubernetes.io/component: agent
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: bb8-readonly
+subjects:
+  - kind: ServiceAccount
+    name: bb8-readonly
+    namespace: default

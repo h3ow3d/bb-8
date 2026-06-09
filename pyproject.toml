@@ -3,9 +3,9 @@ requires = ["setuptools>=61", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "k8s-sidekick"
+name = "bb-8"
 version = "0.1.0"
-description = "Air-gapped-friendly Kubernetes sidekick with local LLM reasoning"
+description = "BB-8: Air-gapped-friendly Kubernetes sidekick with local LLM reasoning"
 requires-python = ">=3.12"
 dependencies = [
     "fastapi>=0.111.0",
@@ -55,7 +55,8 @@ addopts = "--cov=app --cov-report=term-missing --cov-report=xml"
 
 [tool.bandit]
 exclude_dirs = ["tests", ".venv"]
-skips = ["B101"]
+# B101: assert usage in tests; B113: false positive on dict .get("requests")/dict["requests"]
+skips = ["B101", "B113"]
 
 [tool.coverage.run]
 source = ["app"]

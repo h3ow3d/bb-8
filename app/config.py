@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     k8s_context: str = ""
     ollama_base_url: str = "http://ollama:11434"
     ollama_model: str = "qwen2.5:7b-instruct"
-    audit_db_path: str = "/data/audit/k8s-sidekick.db"
+    audit_db_path: str = "/data/audit/bb-8.db"
     knowledge_dir: str = "/knowledge"
     log_level: str = "INFO"
 

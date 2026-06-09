@@ -4,9 +4,9 @@ import logging
 import os
 import sqlite3
 import uuid
+from collections.abc import Generator
 from contextlib import contextmanager
-from datetime import datetime, timezone
-from typing import Generator
+from datetime import UTC, datetime
 
 from app.config import Settings, get_settings
 
@@ -69,7 +69,7 @@ def write_audit(
     if settings is None:
         settings = get_settings()
     record_id = str(uuid.uuid4())
-    ts = datetime.now(timezone.utc).isoformat()
+    ts = datetime.now(UTC).isoformat()
     try:
         with _get_conn(settings.audit_db_path) as conn:
             conn.execute(

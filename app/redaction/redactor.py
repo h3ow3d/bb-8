@@ -3,7 +3,6 @@ from __future__ import annotations
 import re
 from typing import Any
 
-
 _SECRET_PATTERN = re.compile(
     r"""(?ix)
     (?:
@@ -63,9 +62,6 @@ def redact_dict(d: dict[str, Any], *, key_check: bool = True) -> tuple[dict[str,
             new_list, sub_count = redact_list(v, key_check=key_check)
             result[k] = new_list
             count += sub_count
-        elif isinstance(v, str) and key_check and _looks_sensitive_key(str(k)):
-            result[k] = REDACTED
-            count += 1
         elif isinstance(v, str):
             redacted_v, sub_count = redact_string(v)
             result[k] = redacted_v
@@ -103,7 +99,6 @@ def redact_text(text: str) -> tuple[str, int]:
     lines = text.split("\n")
     out: list[str] = []
     for line in lines:
-        # Match key=value or key: value patterns
         new_line, n = _redact_line(line)
         out.append(new_line)
         count += n
@@ -112,14 +107,10 @@ def redact_text(text: str) -> tuple[str, int]:
 
 def _redact_line(line: str) -> tuple[str, int]:
     count = 0
-    # Check for key=value or key: value pattern
     for match in re.finditer(r"(\w[\w\-_.]*)\s*[=:]\s*(\S+)", line):
         key = match.group(1)
         value = match.group(2)
-        if _looks_sensitive_key(key) and value not in ("true", "false", "null", "None", REDACTED):
-            line = line.replace(match.group(0), f"{key}={REDACTED}", 1)
-            count += 1
-        elif _looks_sensitive_value(value):
+        if _looks_sensitive_key(key) and value not in ("true", "false", "null", "None", REDACTED) or _looks_sensitive_value(value):
             line = line.replace(match.group(0), f"{key}={REDACTED}", 1)
             count += 1
     return line, count

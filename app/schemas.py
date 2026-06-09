@@ -4,7 +4,6 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, Field
 
-
 Severity = Literal["info", "low", "medium", "high", "critical"]
 Category = Literal["health", "operational", "security", "rbac", "networking"]
 
@@ -34,6 +33,7 @@ class ClusterReviewResponse(BaseModel):
     security_findings: list[Finding] = Field(default_factory=list)
     recommended_next_checks: list[str] = Field(default_factory=list)
     llm_explanation: str = ""
+    warnings: list[str] = Field(default_factory=list)
     metadata: ClusterReviewMetadata = Field(default_factory=ClusterReviewMetadata)
 
 
@@ -46,6 +46,7 @@ class AskResponse(BaseModel):
     answer: str
     model: str = ""
     audit_id: str = ""
+    warnings: list[str] = Field(default_factory=list)
 
 
 class AuditRecord(BaseModel):

@@ -1,0 +1,128 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: write
+  packages: write
+  id-token: write
+
+jobs:
+  build-and-push:
+    name: Build, Push, and Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Extract version from tag
+        id: version
+        run: echo "version=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push agent image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ghcr.io/h3ow3d/bb-8-agent:${{ steps.version.outputs.version }}
+            ghcr.io/h3ow3d/bb-8-agent:latest
+          labels: |
+            org.opencontainers.image.title=BB-8 Kubernetes Sidekick
+            org.opencontainers.image.version=${{ steps.version.outputs.version }}
+            org.opencontainers.image.source=https://github.com/h3ow3d/bb-8
+            org.opencontainers.image.revision=${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Generate SBOM (Trivy)
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ghcr.io/h3ow3d/bb-8-agent:${{ steps.version.outputs.version }}
+          format: spdx-json
+          output: sbom.spdx.json
+
+      - name: Generate SBOM (CycloneDX)
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ghcr.io/h3ow3d/bb-8-agent:${{ steps.version.outputs.version }}
+          format: cyclonedx
+          output: sbom.cyclonedx.json
+
+      - name: Prepare release bundle
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          BUNDLE_NAME="bb-8-mvp-${VERSION}"
+          mkdir -p "${BUNDLE_NAME}"
+
+          # Copy deployment files
+          cp -r deploy "${BUNDLE_NAME}/"
+          cp -r scripts "${BUNDLE_NAME}/"
+          cp -r docs "${BUNDLE_NAME}/"
+          cp README.md "${BUNDLE_NAME}/"
+          cp sbom.spdx.json "${BUNDLE_NAME}/"
+          cp sbom.cyclonedx.json "${BUNDLE_NAME}/"
+
+          # Generate checksums
+          cd "${BUNDLE_NAME}"
+          find . -type f ! -name "checksums.sha256" | sort | xargs sha256sum > checksums.sha256
+          cd ..
+
+          # Create tarball
+          tar czf "${BUNDLE_NAME}.tar.gz" "${BUNDLE_NAME}/"
+          echo "BUNDLE_FILE=${BUNDLE_NAME}.tar.gz" >> "$GITHUB_ENV"
+          echo "BUNDLE_NAME=${BUNDLE_NAME}" >> "$GITHUB_ENV"
+
+      - name: Upload bundle as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.BUNDLE_NAME }}
+          path: ${{ env.BUNDLE_FILE }}
+          retention-days: 90
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "BB-8 Kubernetes Sidekick ${{ steps.version.outputs.version }}"
+          body: |
+            ## BB-8 Kubernetes Sidekick ${{ steps.version.outputs.version }}
+
+            ### Docker image
+
+            ```bash
+            docker pull ghcr.io/h3ow3d/bb-8-agent:${{ steps.version.outputs.version }}
+            ```
+
+            ### Quick start
+
+            1. Download `${{ env.BUNDLE_FILE }}` from assets below.
+            2. Extract: `tar xzf ${{ env.BUNDLE_FILE }}`
+            3. Configure: `cp deploy/compose/.env.example deploy/compose/.env` and edit.
+            4. Pull model: `scripts/pull-model.sh`
+            5. Start: `scripts/run.sh`
+
+            See `docs/QUICKSTART.md` in the bundle for full instructions.
+
+            ### SBOM
+
+            SBOM files (SPDX and CycloneDX format) are included in the release bundle.
+          files: |
+            ${{ env.BUNDLE_FILE }}
+            sbom.spdx.json
+            sbom.cyclonedx.json
+          draft: false
+          prerelease: false

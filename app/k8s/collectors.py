@@ -413,9 +413,9 @@ def collect_snapshot(api_client: ApiClient) -> ClusterSnapshot:
 
     # LimitRanges
     for lr in _safe_list(core.list_limit_range_for_all_namespaces):
-        limits = []
+        lr_limits: list[dict[str, Any]] = []
         for li in safe_get(lr, "spec", "limits") or []:
-            limits.append(
+            lr_limits.append(
                 {
                     "type": safe_get(li, "type", default=""),
                     "default": dict(safe_get(li, "default") or {}),
@@ -428,7 +428,7 @@ def collect_snapshot(api_client: ApiClient) -> ClusterSnapshot:
             LimitRangeInfo(
                 name=safe_get(lr, "metadata", "name", default=""),
                 namespace=safe_get(lr, "metadata", "namespace", default=""),
-                limits=limits,
+                limits=lr_limits,
             )
         )
 

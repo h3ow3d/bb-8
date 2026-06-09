@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import logging
-import time
 from typing import Any
 
 import httpx
@@ -44,7 +43,7 @@ def chat(
             if resp.status_code == 404:
                 raise OllamaModelMissingError(
                     f"Model '{model}' not found in Ollama. "
-                    f"Run scripts/pull-model.sh to download it."
+                    "Run scripts/pull-model.sh to download it."
                 )
             resp.raise_for_status()
             data = resp.json()
