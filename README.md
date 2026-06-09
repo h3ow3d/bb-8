@@ -89,7 +89,7 @@ curl http://localhost:8080/health
 ```bash
 TOKEN="your-sidecar-api-token"
 curl -s -X POST http://localhost:8080/v1/cluster/review \
-  -H "Authorization: ******" \
+  -H "Authorization: Bearer $TOKEN" \
   | python3 -m json.tool
 ```
 
@@ -97,7 +97,7 @@ curl -s -X POST http://localhost:8080/v1/cluster/review \
 
 ```bash
 curl -s -X POST http://localhost:8080/v1/ask \
-  -H "Authorization: ******" \
+  -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"question": "Which pods are in CrashLoopBackOff?"}' \
   | python3 -m json.tool
@@ -107,7 +107,7 @@ curl -s -X POST http://localhost:8080/v1/ask \
 
 ```bash
 curl -s http://localhost:8080/v1/audit/recent \
-  -H "Authorization: ******" \
+  -H "Authorization: Bearer $TOKEN" \
   | python3 -m json.tool
 ```
 
@@ -116,7 +116,7 @@ curl -s http://localhost:8080/v1/audit/recent \
 All `/v1/*` endpoints require a bearer token:
 
 ```
-Authorization: ******
+Authorization: Bearer $TOKEN
 ```
 
 The `/health` endpoint requires no authentication.

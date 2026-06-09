@@ -13,9 +13,9 @@ echo "==================="
 
 # Resolve API token
 if [ -f "${ENV_FILE}" ]; then
-    API_TOKEN="$(grep "^SIDECAR_API_TOKEN=" "${ENV_FILE}" | cut -d= -f2 | tr -d \'\' | tr -d \")"
+    API_TOKEN="$(grep "^SIDECAR_API_TOKEN=" "${ENV_FILE}" | cut -d= -f2 | sed "s/[\x27\x22]//g")"
 elif [ -f "${ENV_EXAMPLE}" ]; then
-    API_TOKEN="$(grep "^SIDECAR_API_TOKEN=" "${ENV_EXAMPLE}" | cut -d= -f2 | tr -d \'\' | tr -d \")"
+    API_TOKEN="$(grep "^SIDECAR_API_TOKEN=" "${ENV_EXAMPLE}" | cut -d= -f2 | sed "s/[\x27\x22]//g")"
 else
     API_TOKEN="change-me"
 fi

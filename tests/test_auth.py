@@ -10,7 +10,7 @@ from app.main import app
 
 _TEST_TOKEN = "test-api-token-abc123"
 _BEARER_HEADER = "Bearer " + _TEST_TOKEN
-_WRONG_HEADER = "******"
+_WRONG_HEADER = "Bearer " + "wrong-token-value"
 
 
 def _make_settings(**kwargs):

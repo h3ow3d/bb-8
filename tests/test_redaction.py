@@ -11,9 +11,10 @@ from app.redaction.redactor import (
 
 # A plausible-looking JWT for testing (not a real token)
 _FAKE_JWT = (
-    "******"
-    ".eyJzdWIiOiIxMjM0NTY3ODkwIn0"
-    ".SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+    "eyJ"
+    + "hbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
+    + ".eyJzdWIiOiIxMjM0NTY3ODkwIn0"
+    + ".SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
 )
 
 # A plausible-looking long base64 blob
