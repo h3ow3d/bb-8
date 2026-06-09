@@ -107,7 +107,8 @@ def redact_text(text: str) -> tuple[str, int]:
 
 def _redact_line(line: str) -> tuple[str, int]:
     count = 0
-    for match in re.finditer(r"(\w[\w\-_.]*)\s*[=:]\s*(\S+)", line):
+    # Limit key and value lengths to prevent catastrophic backtracking
+    for match in re.finditer(r"(\w[\w\-_.]{0,200})\s*[=:]\s*(\S{1,1024})", line):
         key = match.group(1)
         value = match.group(2)
         if _looks_sensitive_key(key) and value not in ("true", "false", "null", "None", REDACTED) or _looks_sensitive_value(value):

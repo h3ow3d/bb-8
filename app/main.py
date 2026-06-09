@@ -284,6 +284,8 @@ async def ask(
 
     answer = ""
     warnings: list[str] = []
+    audit_status = "ok"
+    error_summary: str | None = None
 
     try:
         answer = chat(

@@ -250,7 +250,7 @@ def collect_snapshot(api_client: ApiClient) -> ClusterSnapshot:
 
     # Services
     for svc in _safe_list(core.list_service_for_all_namespaces):
-        ext_ips = list(safe_get(svc, "spec", "external_i_ps") or [])
+        ext_ips = list(safe_get(svc, "spec", "external_ips") or [])
         snapshot.services.append(
             ServiceInfo(
                 name=safe_get(svc, "metadata", "name", default=""),
